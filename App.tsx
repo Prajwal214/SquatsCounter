@@ -1,6 +1,9 @@
 // App.tsx
 import React from 'react';
-import {NavigationContainer} from '@react-navigation/native';
+import {
+  NavigationContainer,
+  useNavigationContainerRef,
+} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import ExerciseScreen from './ExerciseScreen'; // Adjust the path as necessary
 import ExerciseTrackingScreen from './ExerciseTrackingScreen'; // Adjust the path as necessary
@@ -10,8 +13,10 @@ import UserInput from './UserInput';
 const Stack = createStackNavigator();
 
 const App = () => {
+  const navigationRef = useNavigationContainerRef();
+
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator initialRouteName="LandingPage">
         <Stack.Screen name="LandingPage" component={LandingPage} />
         <Stack.Screen name="Exercise" component={ExerciseScreen} />
@@ -19,6 +24,16 @@ const App = () => {
         <Stack.Screen
           name="ExerciseTracking"
           component={ExerciseTrackingScreen}
+          listeners={{
+            tabPress: e => {
+              // Prevent default behavior
+              e.preventDefault();
+              navigationRef.reset({
+                index: 0,
+                routes: [{name: 'Home'}],
+              });
+            },
+          }}
         />
       </Stack.Navigator>
     </NavigationContainer>

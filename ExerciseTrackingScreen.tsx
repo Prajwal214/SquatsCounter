@@ -1,10 +1,27 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, StyleSheet, PermissionsAndroid, Alert} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  PermissionsAndroid,
+  Alert,
+  TouchableOpacity,
+} from 'react-native';
 import HumanPose from 'react-native-human-pose'; // Ensure this library is correctly installed
 import {useNavigation} from '@react-navigation/native';
-
+const exercises = [
+  {name: 'Squats', icon: require('./assets/squats.png')},
+  {name: 'Push-ups', icon: require('./assets/pushups.png')},
+  {name: 'Planks', icon: require('./assets/planks.png')},
+  {name: 'Lunges', icon: require('./assets/lunges.png')},
+];
 const ExerciseTrackingScreen = ({route}) => {
+  const {initialExerciseIndex = 0} = route.params || {};
+
   const {exercise} = route.params; // Get the selected exercise from the previous screen
+  const [currentExerciseIndex, setCurrentExerciseIndex] =
+    useState(initialExerciseIndex);
+
   const [noOfSquats, setNoOfSquats] = useState(0);
   const [noOfPushups, setNoOfPushups] = useState(0);
   const [noOfLunges, setNoOfLunges] = useState(0);
@@ -14,6 +31,7 @@ const ExerciseTrackingScreen = ({route}) => {
   const navigation = useNavigation();
   const [timer, setTimer] = useState(0);
   const [isPlanking, setIsPlanking] = useState(false);
+  const currentExercise = exercises[currentExerciseIndex].name;
 
   useEffect(() => {
     let interval;
@@ -191,6 +209,25 @@ const ExerciseTrackingScreen = ({route}) => {
     setNoOfSquats(prev => (hasStand ? prev + 1 : prev));
   }, [hasStand]);
 
+  const isPreviousDisabled = currentExerciseIndex === 0;
+  const isNextDisabled = currentExerciseIndex === exercises.length - 1;
+
+  const handlePrevious = () => {
+    if (!isPreviousDisabled) {
+      setCurrentExerciseIndex(prevIndex => prevIndex - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (!isNextDisabled) {
+      setCurrentExerciseIndex(prevIndex => prevIndex + 1);
+    }
+  };
+
+  const handleCancel = () => {
+    navigation.goBack(); // Go back to the previous screen or workout overview
+  };
+
   const requestCameraPermission = async () => {
     try {
       const granted = await PermissionsAndroid.request(
@@ -234,21 +271,42 @@ const ExerciseTrackingScreen = ({route}) => {
         isBackCamera={true} // Use back camera
         onPoseDetected={onPoseDetected}
       />
-      {exercise === 'Squats' && (
+      {currentExercise === 'Squats' && (
         <Text style={styles.counter}>No of Squats: {noOfSquats}</Text>
       )}
 
-      {exercise === 'Push-ups' && (
+      {currentExercise === 'Push-ups' && (
         <Text style={styles.counter}>No of Push-ups: {noOfPushups}</Text>
       )}
 
-      {exercise === 'Lunges' && (
+      {currentExercise === 'Lunges' && (
         <Text style={styles.counter}>No of Lunges: {noOfLunges}</Text>
       )}
 
-      {exercise === 'Planks' && (
+      {currentExercise === 'Planks' && (
         <Text style={styles.counter}>Plank Timer: {timer} seconds</Text>
       )}
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={[styles.button, isPreviousDisabled && styles.buttonDisabled]}
+          onPress={handlePrevious}>
+          <Text style={styles.buttonText}>Previous</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.button, isNextDisabled && styles.buttonDisabled]}
+          onPress={handleNext}>
+          <Text style={styles.buttonText}>Next</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.buttonCancel} onPress={handleCancel}>
+          <Text style={styles.buttonText}>Cancel Workout</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.buttonCancel} onPress={handleCancel}>
+          <Text style={styles.buttonText}>Complete Workout</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -268,6 +326,35 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)', // Optional: semi-transparent background for better readability
     padding: 10,
     borderRadius: 5,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap', // Allow wrapping
+    justifyContent: 'space-between',
+  },
+  button: {
+    backgroundColor: '#007BFF',
+    padding: 6,
+    flex: 1, // Make each button take equal space
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 5,
+    marginHorizontal: 4,
+  },
+  buttonCancel: {
+    flex: 1, // Make cancel buttons also take equal space
+    backgroundColor: 'red',
+    padding: 12,
+    borderRadius: 5,
+    marginHorizontal: 5,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 13,
+    fontWeight: 'bold',
+  },
+  buttonDisabled: {
+    backgroundColor: '#CCCCCC', // Disabled button color
   },
 });
 

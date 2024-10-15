@@ -22,7 +22,10 @@ const ExerciseScreen = () => {
             key={index}
             style={styles.tile}
             onPress={() =>
-              navigation.navigate('ExerciseTracking', {exercise: exercise.name})
+              navigation.navigate('ExerciseTracking', {
+                exercise: exercise.name,
+                initialExerciseIndex: index,
+              })
             }>
             <Image source={exercise.icon} style={styles.icon} />
             <Text style={styles.exerciseName}>{exercise.name}</Text>
