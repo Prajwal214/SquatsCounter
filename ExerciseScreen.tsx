@@ -1,17 +1,13 @@
 // ExerciseScreen.tsx
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import {View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
 
 const exercises = [
-  { name: 'Squats', icon: require('./assets/squats.png') },
-  { name: 'Push-ups', icon: require('./assets/pushups.png') },
-  { name: 'Planks', icon: require('./assets/planks.png') },
-  { name: 'Jumping Jacks', icon: require('./assets/jumpingjacks.png') },
-  { name: 'Lunges', icon: require('./assets/lunges.png') },
-  { name: 'Burpees', icon: require('./assets/burpees.png') },
-  { name: 'Sit-ups', icon: require('./assets/situps.png') },
-  { name: 'Mountain Climbers', icon: require('./assets/mountainclimbers.png') },
+  {name: 'Squats', icon: require('./assets/squats.png')},
+  {name: 'Push-ups', icon: require('./assets/pushups.png')},
+  {name: 'Planks', icon: require('./assets/planks.png')},
+  {name: 'Lunges', icon: require('./assets/lunges.png')},
 ];
 
 const ExerciseScreen = () => {
@@ -25,8 +21,9 @@ const ExerciseScreen = () => {
           <TouchableOpacity
             key={index}
             style={styles.tile}
-            onPress={() => navigation.navigate('ExerciseTracking', { exercise: exercise.name })}
-          >
+            onPress={() =>
+              navigation.navigate('ExerciseTracking', {exercise: exercise.name})
+            }>
             <Image source={exercise.icon} style={styles.icon} />
             <Text style={styles.exerciseName}>{exercise.name}</Text>
           </TouchableOpacity>
@@ -37,22 +34,22 @@ const ExerciseScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center', 
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 16,
     backgroundColor: '#eaeaea', // Light background for contrast
   },
-  header: { 
+  header: {
     fontSize: 28, // Increased header size for better visibility
-    fontWeight: 'bold', 
+    fontWeight: 'bold',
     marginBottom: 20,
     color: '#333', // Darker text for contrast
   },
-  grid: { 
-    flexDirection: 'row', 
-    flexWrap: 'wrap', 
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'center',
   },
   tile: {
@@ -77,12 +74,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     resizeMode: 'contain', // Ensures the icon maintains its aspect ratio
   },
-  exerciseName: { 
-    textAlign: 'center', 
+  exerciseName: {
+    textAlign: 'center',
     fontSize: 18, // Increased text size for better readability
     color: '#555', // Slightly lighter text for aesthetics
   },
 });
 
 export default ExerciseScreen;
-
