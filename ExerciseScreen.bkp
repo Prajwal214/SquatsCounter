@@ -1,0 +1,84 @@
+// ExerciseScreen.js
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import HumanPose from 'react-native-human-pose';
+import { View, Text, StyleSheet } from 'react-native';
+
+const ExerciseScreen = ({ route }) => {
+  const { exercise } = route.params;
+  const [hasSit, setHasSit] = useState(false);
+  const [hasStand, setHasStand] = useState(false);
+  const noOfReps = useRef(0);
+
+  const onPoseDetected = useCallback((pose) => {
+    // Example logic for squats (modify for each exercise)
+    if (exercise === 'Squats') {
+      const leftHip = pose[0]?.pose?.leftHip;
+      const leftAnkle = pose[0]?.pose?.leftAnkle;
+
+      if (leftHip?.confidence > 0.5 && leftAnkle?.confidence > 0.5) {
+        const hipAnkleDiff = Math.abs(leftHip.y - leftAnkle.y);
+
+        if (hipAnkleDiff < 400 && !hasSit) {
+          setHasSit(true);
+          setHasStand(false);
+        } else if (hipAnkleDiff > 400 && hasSit) {
+          setHasStand(true);
+          setHasSit(false);
+        }
+      }
+    }
+
+    // Add specific logic for other exercises here
+  }, [hasSit, exercise]);
+
+  useEffect(() => {
+    if (hasStand) {
+      noOfReps.current += 1;
+      setHasStand(false); // Reset after counting
+    }
+  }, [hasStand]);
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>{exercise}</Text>
+      <HumanPose
+        height={500}
+        width={400}
+        enableKeyPoints={true}
+        flipHorizontal={false}
+        isBackCamera={true}
+        color={'255, 0, 0'}
+        onPoseDetected={onPoseDetected}
+      />
+      <Text style={styles.repCount}>
+        No of {exercise} Reps: {noOfReps.current}
+      </Text>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  repCount: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    textAlign: 'center',
+    backgroundColor: 'black',
+    color: 'white',
+    padding: 10,
+    fontSize: 20,
+  },
+});
+
+export default ExerciseScreen;
