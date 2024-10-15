@@ -1,9 +1,17 @@
 // ExerciseScreen.tsx
 import React from 'react';
-import {View, Text, TouchableOpacity, StyleSheet, Image, Button, TextInput} from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  Button,
+  TextInput,
+} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ScrollView } from 'react-native-gesture-handler';
+import {ScrollView} from 'react-native-gesture-handler';
 
 const exercises = [
   {name: 'Squats', icon: require('./assets/squats.png')},
@@ -17,12 +25,12 @@ const ExerciseScreen = () => {
   const [currentWorkout, setCurrentWorkout] = React.useState({});
   const [fullWorkout, setFullWorkout] = React.useState([]);
 
-  const setWorkoutData = async() => {
+  const setWorkoutData = async () => {
     let CurrentWork = null;
     const localStorageData = await AsyncStorage.getItem('workout');
     const parsedData = JSON.parse(localStorageData);
     if (parsedData) {
-      CurrentWorkout = parsedData.find((obj)=> obj.isComplete === false);
+      CurrentWorkout = parsedData.find(obj => obj.isComplete === false);
       setCurrentWorkout(CurrentWorkout);
       setFullWorkout(parsedData);
     }
@@ -30,45 +38,65 @@ const ExerciseScreen = () => {
 
   React.useEffect(() => {
     setWorkoutData();
-  },[]);
+  }, []);
 
   return (
     <ScrollView>
-   {currentWorkout && <View style={styles.container}>
-      <Text style={styles.header}>Start todays Exercise</Text>
-      <View style={styles.grid}>
-        {exercises.map((exercise, index) => (
-          <TouchableOpacity
-            key={index}
-            style={styles.tile}
-            // onPress={() =>
-            //   navigation.navigate('ExerciseTracking', {
-            //     exercise: exercise.name,
-            //     initialExerciseIndex: index,
-            //   })
-            // }>
-            >
-            <Image source={exercise.icon} style={styles.icon} />
-            <Text style={styles.exerciseName}>{exercise.name}</Text>
-            <TextInput
-   keyboardType="numeric"
-   onChangeText={(text)=> setCurrentWorkout({...currentWorkout,[exercise.name]: text})}
-   value={String(currentWorkout[exercise.name])}
-   defaultValue={currentWorkout[exercise.name] }
-   maxLength={10}  //setting limit of input
-/>
-          </TouchableOpacity>
-        ))}
-      </View>
-      <Button onPress={() =>  navigation.navigate('ExerciseTracking', {exercise: 'Squats',initialExerciseIndex: 0})} title="Start" />
-      <Text style={styles.header}>Future workouts and progress</Text>
-<View style={styles.grid} >{fullWorkout?.map((workout,index)=>{
-  return <View>
-    <Text style={styles.exerciseName}>Day {index}</Text>
-    <Text>{JSON.stringify(workout)}</Text>
-  </View>;
-})}</View>
-    </View>}
+      {currentWorkout && (
+        <View style={styles.container}>
+          <Text style={styles.header}>Start todays Exercise</Text>
+          <View style={styles.grid}>
+            {exercises.map((exercise, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.tile}
+                // onPress={() =>
+                //   navigation.navigate('ExerciseTracking', {
+                //     exercise: exercise.name,
+                //     initialExerciseIndex: index,
+                //   })
+                // }>
+              >
+                <Image source={exercise.icon} style={styles.icon} />
+                <Text style={styles.exerciseName}>{exercise.name}</Text>
+                <TextInput
+                  keyboardType="numeric"
+                  onChangeText={text =>
+                    setCurrentWorkout({
+                      ...currentWorkout,
+                      [exercise.name]: text,
+                    })
+                  }
+                  value={String(currentWorkout[exercise.name])}
+                  defaultValue={currentWorkout[exercise.name]}
+                  maxLength={10} //setting limit of input
+                />
+              </TouchableOpacity>
+            ))}
+          </View>
+          <Button
+            onPress={() =>
+              navigation.navigate('ExerciseTracking', {
+                exercise: 'Squats',
+                initialExerciseIndex: 0,
+                currentWorkout: currentWorkout,
+              })
+            }
+            title="Start"
+          />
+          <Text style={styles.header}>Future workouts and progress</Text>
+          <View style={styles.grid}>
+            {fullWorkout?.map((workout, index) => {
+              return (
+                <View>
+                  <Text style={styles.exerciseName}>Day {index}</Text>
+                  <Text>{JSON.stringify(workout)}</Text>
+                </View>
+              );
+            })}
+          </View>
+        </View>
+      )}
     </ScrollView>
   );
 };

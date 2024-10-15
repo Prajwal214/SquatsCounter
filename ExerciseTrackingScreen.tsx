@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import HumanPose from 'react-native-human-pose'; // Ensure this library is correctly installed
 import {useNavigation} from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const exercises = [
   {name: 'Squats', icon: require('./assets/squats.png')},
   {name: 'Push-ups', icon: require('./assets/pushups.png')},
@@ -18,10 +19,10 @@ const exercises = [
 const ExerciseTrackingScreen = ({route}) => {
   const {initialExerciseIndex = 0} = route.params || {};
 
-  const {exercise} = route.params; // Get the selected exercise from the previous screen
+  const {exercise, currentWorkout} = route.params; // Get the selected exercise from the previous screen
   const [currentExerciseIndex, setCurrentExerciseIndex] =
     useState(initialExerciseIndex);
-
+  console.log('currentWorkout', currentWorkout);
   const [noOfSquats, setNoOfSquats] = useState(0);
   const [noOfPushups, setNoOfPushups] = useState(0);
   const [noOfLunges, setNoOfLunges] = useState(0);
@@ -32,6 +33,32 @@ const ExerciseTrackingScreen = ({route}) => {
   const [timer, setTimer] = useState(0);
   const [isPlanking, setIsPlanking] = useState(false);
   const currentExercise = exercises[currentExerciseIndex].name;
+  const setWorkoutData = async () => {
+    try {
+      const localStorageData = await AsyncStorage.getItem('workout');
+      const parsedData = JSON.parse(localStorageData);
+
+      if (parsedData) {
+        // Find the index of the first incomplete workout
+        const currentWorkoutDataIndex = parsedData.findIndex(
+          obj => obj.isComplete === false,
+        );
+        // If there's an incomplete workout, update its isComplete property
+        if (currentWorkoutDataIndex !== -1) {
+          parsedData[currentWorkoutDataIndex].isComplete = true; // Mark as complete
+          console.log(
+            'Updated CurrentWorkout:',
+            parsedData[currentWorkoutDataIndex],
+          );
+
+          // Save the updated workout data back to AsyncStorage
+          await AsyncStorage.setItem('workout', JSON.stringify(parsedData));
+        }
+      }
+    } catch (error) {
+      console.error('Error updating workout data:', error);
+    }
+  };
 
   useEffect(() => {
     let interval;
@@ -225,6 +252,7 @@ const ExerciseTrackingScreen = ({route}) => {
   };
 
   const handleCancel = () => {
+    setWorkoutData();
     navigation.goBack(); // Go back to the previous screen or workout overview
   };
 
