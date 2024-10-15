@@ -8,10 +8,12 @@ import {
   Image,
   Button,
   TextInput,
+  SafeAreaView,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {ScrollView} from 'react-native-gesture-handler';
+import { ScrollView } from 'react-native-gesture-handler';
+import Icon from 'react-native-vector-icons/Entypo';
 
 const exercises = [
   {name: 'Squats', icon: require('./assets/squats.png')},
@@ -24,6 +26,7 @@ const ExerciseScreen = () => {
   const navigation = useNavigation();
   const [currentWorkout, setCurrentWorkout] = React.useState({});
   const [fullWorkout, setFullWorkout] = React.useState([]);
+
 
   const setWorkoutData = async () => {
     let CurrentWork = null;
@@ -41,6 +44,7 @@ const ExerciseScreen = () => {
   }, []);
 
   return (
+    <SafeAreaView>
     <ScrollView>
       {currentWorkout && (
         <View style={styles.container}>
@@ -59,18 +63,19 @@ const ExerciseScreen = () => {
               >
                 <Image source={exercise.icon} style={styles.icon} />
                 <Text style={styles.exerciseName}>{exercise.name}</Text>
-                <TextInput
-                  keyboardType="numeric"
-                  onChangeText={text =>
-                    setCurrentWorkout({
-                      ...currentWorkout,
-                      [exercise.name]: text,
-                    })
-                  }
-                  value={String(currentWorkout[exercise.name])}
-                  defaultValue={currentWorkout[exercise.name]}
-                  maxLength={10} //setting limit of input
-                />
+                <View style={styles.searchSection}>
+              <View>
+            <Icon style={styles.searchIcon} name="pencil" size={20} color="#000"/>
+            </View>
+    <TextInput
+   keyboardType="numeric"
+   onChangeText={(text)=> setCurrentWorkout({...currentWorkout,[exercise.name]: text})}
+   value={String(currentWorkout[exercise.name])}
+   defaultValue={currentWorkout[exercise.name] }
+   maxLength={10}  //setting limit of input
+   style={styles.input}
+/>
+</View>
               </TouchableOpacity>
             ))}
           </View>
@@ -117,6 +122,7 @@ const ExerciseScreen = () => {
         </View>
       )}
     </ScrollView>
+    </SafeAreaView>
   );
 };
 
@@ -204,6 +210,25 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  searchSection: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+},
+searchIcon: {
+    padding: 10,
+},
+input: {
+    flex: 1,
+    paddingTop: 10,
+    paddingRight: 10,
+    paddingBottom: 10,
+    paddingLeft: 0,
+    backgroundColor: '#fff',
+    color: '#424242',
+},
 });
 
 export default ExerciseScreen;
