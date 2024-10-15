@@ -10,6 +10,8 @@ import {
 import HumanPose from 'react-native-human-pose'; // Ensure this library is correctly installed
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import FastImage from 'react-native-fast-image';
+
 const exercises = [
   {name: 'Squats', icon: require('./assets/squats.png')},
   {name: 'Push-ups', icon: require('./assets/pushups.png')},
@@ -288,9 +290,22 @@ const ExerciseTrackingScreen = ({route}) => {
     };
     checkPermissions();
   }, [navigation]);
+  const exerciseGifs = {
+    Squats: require('./assets/squat.gif'), // Adjust the paths as needed
+    'Push-ups': require('./assets/push-up.gif'),
+    Lunges: require('./assets/lunges.gif'),
+    Planks: require('./assets/plank.gif'),
+  };
 
+  // Get the current GIF based on the current exercise
+  const currentGif = exerciseGifs[currentExercise] || exerciseGifs.Squats; // Fallback to Squats if not found
   return (
     <View style={styles.container}>
+      <FastImage
+        source={currentGif} // Use a local GIF
+        style={styles.gif} // Adjust the style as needed
+        resizeMode="contain" // To maintain aspect ratio
+      />
       <HumanPose
         height={500}
         width={400}
@@ -383,6 +398,11 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: {
     backgroundColor: '#CCCCCC', // Disabled button color
+  },
+  gif: {
+    width: 300, // Adjust width as needed
+    height: 200, // Adjust height as needed
+    marginBottom: 20, // Space between the GIF and HumanPose component
   },
 });
 
