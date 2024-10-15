@@ -74,7 +74,7 @@ const ExerciseScreen = () => {
               </TouchableOpacity>
             ))}
           </View>
-          <Button
+          <TouchableOpacity
             onPress={() =>
               navigation.navigate('ExerciseTracking', {
                 exercise: 'Squats',
@@ -82,19 +82,38 @@ const ExerciseScreen = () => {
                 currentWorkout: currentWorkout,
               })
             }
-            title="Start"
-          />
+            style={styles.startButton}>
+            <Text style={styles.startButtonText}>Start</Text>
+          </TouchableOpacity>
+
           <Text style={styles.header}>Future workouts and progress</Text>
-          <View style={styles.grid}>
-            {fullWorkout?.map((workout, index) => {
-              return (
-                <View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.scrollView}>
+            {fullWorkout.map((workout, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.button,
+                  workout.isComplete
+                    ? styles.buttonComplete
+                    : styles.buttonIncomplete,
+                ]}
+                onPress={() => {
+                  /* Handle button press, e.g., navigate to details */
+                }}>
+                <Text style={styles.buttonText}>
                   <Text style={styles.exerciseName}>Day {index}</Text>
-                  <Text>{JSON.stringify(workout)}</Text>
-                </View>
-              );
-            })}
-          </View>
+                  {'\n'}
+                  Squats: {workout.Squats} {'\n'}
+                  Push-ups: {workout['Push-ups']} {'\n'}
+                  Planks: {workout.Planks} {'\n'}
+                  Lunges: {workout.Lunges}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
       )}
     </ScrollView>
@@ -146,6 +165,44 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 18, // Increased text size for better readability
     color: '#555', // Slightly lighter text for aesthetics
+  },
+  scrollView: {
+    padding: 10,
+  },
+  button: {
+    borderWidth: 2,
+    borderRadius: 10,
+    padding: 10,
+    marginHorizontal: 5,
+    width: 120, // Set width for uniformity
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonComplete: {
+    borderColor: 'green',
+    backgroundColor: 'lightgreen',
+  },
+  buttonIncomplete: {
+    borderColor: 'red',
+    backgroundColor: 'lightcoral',
+  },
+  buttonText: {
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  startButton: {
+    backgroundColor: 'rgb(244 63 94)', // Change this to customize button color
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    marginTop: 10, // Adjust to control the button's distance from the bottom
+    marginBottom: 10, // Adjust to control the button's distance from the bottom
+    alignSelf: 'center', // Centers the button horizontally
+    borderRadius: 10,
+  },
+  startButtonText: {
+    color: '#fff', // White text color for contrast
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 
