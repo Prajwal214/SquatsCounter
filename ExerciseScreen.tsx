@@ -1,6 +1,6 @@
 // ExerciseScreen.tsx
 import React from 'react';
-import {View, Text, TouchableOpacity, StyleSheet, Image, Button} from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet, Image, Button, TextInput} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -14,7 +14,7 @@ const exercises = [
 
 const ExerciseScreen = () => {
   const navigation = useNavigation();
-  const [currentWorkout, setCurrentWorkout] = React.useState(null);
+  const [currentWorkout, setCurrentWorkout] = React.useState({});
   const [fullWorkout, setFullWorkout] = React.useState([]);
 
   const setWorkoutData = async() => {
@@ -26,16 +26,15 @@ const ExerciseScreen = () => {
       setCurrentWorkout(CurrentWorkout);
       setFullWorkout(parsedData);
     }
-
   };
 
   React.useEffect(() => {
     setWorkoutData();
-  });
+  },[]);
 
   return (
     <ScrollView>
-    <View style={styles.container}>
+   {currentWorkout && <View style={styles.container}>
       <Text style={styles.header}>Start todays Exercise</Text>
       <View style={styles.grid}>
         {exercises.map((exercise, index) => (
@@ -51,7 +50,13 @@ const ExerciseScreen = () => {
             >
             <Image source={exercise.icon} style={styles.icon} />
             <Text style={styles.exerciseName}>{exercise.name}</Text>
-            <Text style={styles.exerciseName}>{ currentWorkout ? currentWorkout[exercise.name] : 10}</Text>
+            <TextInput
+   keyboardType="numeric"
+   onChangeText={(text)=> setCurrentWorkout({...currentWorkout,[exercise.name]: text})}
+   value={String(currentWorkout[exercise.name])}
+   defaultValue={currentWorkout[exercise.name] }
+   maxLength={10}  //setting limit of input
+/>
           </TouchableOpacity>
         ))}
       </View>
@@ -63,7 +68,7 @@ const ExerciseScreen = () => {
     <Text>{JSON.stringify(workout)}</Text>
   </View>;
 })}</View>
-    </View>
+    </View>}
     </ScrollView>
   );
 };
