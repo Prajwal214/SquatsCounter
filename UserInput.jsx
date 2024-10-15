@@ -27,10 +27,9 @@ const UserInput = () => {
 
     const handleSubmit = async () => {
         // const data = [];
-        var month = new Date().getMonth() + 1;
         const data = await getChatGPTResponse(`Hi 
-my weight is ${weight}kg . I am a ${gender} . my height is ${height}cm . Can you create a workout for a  month that only consist of situps and pushups . please give answer in this format
-{ 1: {pushup:10 , situps:10} , 2:  {pushup:10 , situps:10}}
+my weight is ${weight}kg . I am a ${gender} . my height is ${height}cm . Can you create a workout for a  month that only consist of Squats,Push-ups,Planks and Lunges . please give answer in this format
+[{pushup:10 , situps:10,isComplete:false} , {pushup:10 , situps:10,isComplete:false}]
 Please send only result and no other words`);
         console.log(data);
         await AsyncStorage.setItem('workout', JSON.stringify(data));
@@ -40,7 +39,7 @@ Please send only result and no other words`);
     return (
         <View style={styles.container}>
             <Text style={styles.header}>
-                BMI Calculator
+                Get personlized workout
             </Text>
             <View style={styles.form}>
                 <View style={styles.inputRow}>

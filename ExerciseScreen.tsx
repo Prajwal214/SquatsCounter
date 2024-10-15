@@ -1,7 +1,9 @@
 // ExerciseScreen.tsx
 import React from 'react';
-import {View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet, Image, Button} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ScrollView } from 'react-native-gesture-handler';
 
 const exercises = [
   {name: 'Squats', icon: require('./assets/squats.png')},
@@ -12,27 +14,57 @@ const exercises = [
 
 const ExerciseScreen = () => {
   const navigation = useNavigation();
+  const [currentWorkout, setCurrentWorkout] = React.useState(null);
+  const [fullWorkout, setFullWorkout] = React.useState([]);
+
+  const setWorkoutData = async() => {
+    let CurrentWork = null;
+    const localStorageData = await AsyncStorage.getItem('workout');
+    const parsedData = JSON.parse(localStorageData);
+    if (parsedData) {
+      CurrentWorkout = parsedData.find((obj)=> obj.isComplete === false);
+      setCurrentWorkout(CurrentWorkout);
+      setFullWorkout(parsedData);
+    }
+
+  };
+
+  React.useEffect(() => {
+    setWorkoutData();
+  });
 
   return (
+    <ScrollView>
     <View style={styles.container}>
-      <Text style={styles.header}>Select an Exercise</Text>
+      <Text style={styles.header}>Start todays Exercise</Text>
       <View style={styles.grid}>
         {exercises.map((exercise, index) => (
           <TouchableOpacity
             key={index}
             style={styles.tile}
-            onPress={() =>
-              navigation.navigate('ExerciseTracking', {
-                exercise: exercise.name,
-                initialExerciseIndex: index,
-              })
-            }>
+            // onPress={() =>
+            //   navigation.navigate('ExerciseTracking', {
+            //     exercise: exercise.name,
+            //     initialExerciseIndex: index,
+            //   })
+            // }>
+            >
             <Image source={exercise.icon} style={styles.icon} />
             <Text style={styles.exerciseName}>{exercise.name}</Text>
+            <Text style={styles.exerciseName}>{ currentWorkout ? currentWorkout[exercise.name] : 10}</Text>
           </TouchableOpacity>
         ))}
       </View>
+      <Button onPress={() =>  navigation.navigate('ExerciseTracking', {exercise: 'Squats',initialExerciseIndex: 0})} title="Start" />
+      <Text style={styles.header}>Future workouts and progress</Text>
+<View style={styles.grid} >{fullWorkout?.map((workout,index)=>{
+  return <View>
+    <Text style={styles.exerciseName}>Day {index}</Text>
+    <Text>{JSON.stringify(workout)}</Text>
+  </View>;
+})}</View>
     </View>
+    </ScrollView>
   );
 };
 
