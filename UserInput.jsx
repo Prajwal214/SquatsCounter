@@ -7,6 +7,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getChatGPTResponse } from './ChatService';
 import { useNavigation } from '@react-navigation/native';
+import FastImage from 'react-native-fast-image';
 
 const UserInput = () => {
     const [age, setAge] = useState('');
@@ -17,29 +18,32 @@ const UserInput = () => {
 
     const router = useNavigation();
 
-    const validateForm = () => {
+    const handleSubmit = async () => {
+        // const data = [];
         if (!age || !height || !weight || !gender) {
             alert('All fields are required!');
         } else {
-            countBmi();
+            const data = await getChatGPTResponse(`Hi 
+    my weight is ${weight}kg . I am a ${gender} . my height is ${height}cm . Can you create a workout for a  month that only consist of Squats,Push-ups,Planks and Lunges . please give answer in this format
+    [{pushup:10 , situps:10,isComplete:false} , {pushup:10 , situps:10,isComplete:false}]
+    Please send only result and no other words`);
+            console.log(data);
+            await AsyncStorage.setItem('workout', JSON.stringify(data));
+            router.navigate('Exercise');
         }
-    };
-
-    const handleSubmit = async () => {
-        // const data = [];
-        const data = await getChatGPTResponse(`Hi 
-my weight is ${weight}kg . I am a ${gender} . my height is ${height}cm . Can you create a workout for a  month that only consist of Squats,Push-ups,Planks and Lunges . please give answer in this format
-[{pushup:10 , situps:10,isComplete:false} , {pushup:10 , situps:10,isComplete:false}]
-Please send only result and no other words`);
-        console.log(data);
-        await AsyncStorage.setItem('workout', JSON.stringify(data));
-        router.navigate('Exercise');
     };
 
     return (
         <View style={styles.container}>
+            <FastImage
+                source={require('./assets/bg.gif')}
+                style={styles.backgroundImage}
+                resizeMode={FastImage.resizeMode.cover} // Use FastImage resize mode
+
+            />
             <Text style={styles.header}>
-                Get personlized workout
+                Unlock Your {'\n'}
+                <Text style={{ color: 'rgb(244 63 94)' }}> Perfect Workout</Text>
             </Text>
             <View style={styles.form}>
                 <View style={styles.inputRow}>
@@ -48,9 +52,9 @@ Please send only result and no other words`);
                     </Text>
                     <TextInput
                         style={styles.textInput}
-                        placeholder="Enter your age"
                         onChangeText={setAge}
                         value={age}
+                        placeholderTextColor="#000"
                         keyboardType="numeric"
                     />
                 </View>
@@ -60,8 +64,9 @@ Please send only result and no other words`);
                     </Text>
                     <TextInput
                         style={styles.textInput}
-                        placeholder="Enter your height"
                         onChangeText={setHeight}
+                        placeholderTextColor="#000"
+
                         value={height}
                         keyboardType="numeric"
                     />
@@ -72,8 +77,9 @@ Please send only result and no other words`);
                     </Text>
                     <TextInput
                         style={styles.textInput}
-                        placeholder="Enter your weight"
                         onChangeText={setWeight}
+                        placeholderTextColor="#000"
+
                         value={weight}
                         keyboardType="numeric"
                     />
@@ -86,7 +92,10 @@ Please send only result and no other words`);
                         ]}
                         onPress={() => setGender('male')}
                     >
-                        <Text style={styles.genderText}>
+                        <Text style={[
+                            styles.genderText,
+                            gender === 'male' && styles.selectedGenderMale,
+                        ]}>
                             Male
                         </Text>
                     </TouchableOpacity>
@@ -97,7 +106,10 @@ Please send only result and no other words`);
                         ]}
                         onPress={() => setGender('female')}
                     >
-                        <Text style={styles.genderText}>Female</Text>
+                        <Text style={[
+                            styles.genderText,
+                            gender === 'female' && styles.selectedGenderFemale,
+                        ]}>Female</Text>
                     </TouchableOpacity>
                 </View>
                 <TouchableOpacity
@@ -136,14 +148,20 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
+    backgroundImage: {
+        ...StyleSheet.absoluteFillObject, // Makes the image cover the entire screen
+        width: '100%',
+        height: '100%',
+    },
     header: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#289df6',
-        marginBottom: 20,
+        textAlign: 'center',
+        fontSize: 34,
+        marginBottom: 60,
+        lineHeight: 48,
+        color: '#fff',
     },
     form: {
-        backgroundColor: '#fff',
+        backgroundColor: 'rgba(255, 255, 255, 0.8)',
         borderRadius: 20,
         padding: 20,
         width: '90%',
@@ -165,8 +183,8 @@ const styles = StyleSheet.create({
         flex: 2,
         height: 40,
         borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 10,
+        borderColor: '#7e7e7e',
+        borderRadius: 6,
         paddingLeft: 10,
         fontSize: 16,
         color: '#000',
@@ -187,7 +205,14 @@ const styles = StyleSheet.create({
         margin: 10,
     },
     selectedGender: {
-        backgroundColor: '#289df6',
+        backgroundColor: 'rgb(244 63 94)',
+    },
+    selectedGenderMale: {
+        color: '#fff',
+    },
+    selectedGenderFemale: {
+        color: '#fff',
+
     },
     genderText: {
         fontSize: 16,
@@ -195,7 +220,7 @@ const styles = StyleSheet.create({
         color: '#333',
     },
     submitButton: {
-        backgroundColor: '#289df6',
+        backgroundColor: 'rgb(244 63 94)',
         borderRadius: 10,
         height: 50,
         justifyContent: 'center',

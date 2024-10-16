@@ -1,19 +1,28 @@
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import React from 'react';
-import { View, Image, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import FastImage from 'react-native-fast-image';
 
 export default function LandingPage() {
     const router = useNavigation();
 
     return (
         <View style={styles.container}>
-            <Image
-                source={require('./assets/welcome.png')}
+            <FastImage
+                source={require('./assets/bg.gif')}
                 style={styles.backgroundImage}
-                resizeMode="cover" // Ensures the image covers the whole screen
+                resizeMode={FastImage.resizeMode.cover} // Use FastImage resize mode
             />
+
+            <Text style={styles.header}>
+                Core<Text style={{ color: 'rgb(244 63 94)' }}>Tracker</Text>
+            </Text>
+            <Text style={styles.tagline}>
+                Track your <Text style={{ color: 'rgb(244 63 94)' }}>progress</Text> and{' '}
+                <Text style={{ color: 'rgb(244 63 94)' }}>perfect</Text> your form with
+                every rep.
+            </Text>
             <TouchableOpacity
                 onPress={async () => {
                     const workout = await AsyncStorage.getItem('workout');
@@ -22,9 +31,8 @@ export default function LandingPage() {
                     parse ? router.navigate('Exercise') : router.navigate('UserInput');
                 }}
                 style={styles.button}
-                className="bg-rose-500 flex items-center justify-center mx-auto rounded-full border-[2px] border-neutral-200"
             >
-                <Text className="text-white font-bold tracking-widest">
+                <Text style={styles.buttonText}>
                     Get Started
                 </Text>
             </TouchableOpacity>
@@ -35,7 +43,9 @@ export default function LandingPage() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'flex-end',
+        backgroundColor: '#eef2f3',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     backgroundImage: {
         ...StyleSheet.absoluteFillObject, // Makes the image cover the entire screen
@@ -43,16 +53,30 @@ const styles = StyleSheet.create({
         height: '100%',
     },
     button: {
-        backgroundColor: 'rgb(244 63 94)', // Change this to customize button color
-        paddingVertical: 15,
+        height: 50,
+        backgroundColor: 'rgba(244,63,94,0.7)',
+        paddingVertical: 10,
         paddingHorizontal: 30,
-        marginBottom: 50, // Adjust to control the button's distance from the bottom
+        marginTop: 80, // Adjust to control the button's distance from the bottom
         alignSelf: 'center', // Centers the button horizontally
-        borderRadius: 10,
+        borderRadius: 8,
     },
     buttonText: {
         color: '#fff', // White text color for contrast
-        fontSize: 18,
-        fontWeight: 'bold',
+        fontSize: 20,
+    },
+    header: {
+        textAlign: 'center',
+        fontSize: 44,
+        marginBottom: 20, // Reduced margin to make space for the tagline
+        lineHeight: 44,
+        color: '#fff',
+    },
+    tagline: {
+        textAlign: 'center',
+        fontSize: 18, // Smaller font size for the tagline
+        marginTop: 10, // Adjusts spacing between title and tagline
+        color: '#fff',
+        paddingHorizontal: 20, // Optional: adds padding for better readability
     },
 });

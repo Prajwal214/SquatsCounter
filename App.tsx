@@ -18,19 +18,39 @@ const App = () => {
   return (
     <NavigationContainer ref={navigationRef}>
       <Stack.Navigator initialRouteName="LandingPage">
-        <Stack.Screen name="LandingPage" component={LandingPage} />
-        <Stack.Screen name="Exercise" component={ExerciseScreen} />
-        <Stack.Screen name="UserInput" component={UserInput} />
+        <Stack.Screen
+          options={{headerShown: false}}
+          name="LandingPage"
+          component={LandingPage}
+        />
+        <Stack.Screen
+          options={{
+            title: 'Dashboard',
+            headerBackImage: () => <></>,
+          }}
+          name="Exercise"
+          component={ExerciseScreen}
+        />
+        <Stack.Screen
+          options={{
+            headerShown: false,
+          }}
+          name="UserInput"
+          component={UserInput}
+        />
         <Stack.Screen
           name="ExerciseTracking"
           component={ExerciseTrackingScreen}
+          options={{
+            title: 'Exercise Tracking',
+          }}
           listeners={{
             tabPress: e => {
               // Prevent default behavior
               e.preventDefault();
               navigationRef.reset({
                 index: 0,
-                routes: [{name: 'Home'}],
+                routes: [{name: 'LandingPage'}],
               });
             },
           }}

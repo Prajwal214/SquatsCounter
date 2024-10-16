@@ -284,11 +284,13 @@ const ExerciseTrackingScreen = ({route}) => {
     }
   };
 
-  const handleCancel = () => {
+  const handleComplete = () => {
     setWorkoutData();
     navigation.goBack(); // Go back to the previous screen or workout overview
   };
-
+  const handleCancel = () => {
+    navigation.goBack(); // Go back to the previous screen or workout overview
+  };
   const requestCameraPermission = async () => {
     try {
       const granted = await PermissionsAndroid.request(
@@ -377,7 +379,7 @@ const ExerciseTrackingScreen = ({route}) => {
           <Text style={styles.buttonText}>Cancel Workout</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.buttonCancel} onPress={handleCancel}>
+        <TouchableOpacity style={styles.buttonCancel} onPress={handleComplete}>
           <Text style={styles.buttonText}>Complete Workout</Text>
         </TouchableOpacity>
       </View>
