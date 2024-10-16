@@ -110,28 +110,41 @@ const ExerciseTrackingScreen = ({route}) => {
   const handleSquats = pose => {
     const leftHipY = pose[0]?.pose?.leftHip?.y;
     const leftAnkleY = pose[0]?.pose?.leftAnkle?.y;
-
+  
+    console.log('Squats:', leftHipY, leftAnkleY);
+  
+    // Check confidence levels
     if (
       pose[0]?.pose?.leftHip?.confidence > 0.5 &&
       pose[0]?.pose?.leftAnkle?.confidence > 0.5
     ) {
-      if (Math.abs(leftHipY - leftAnkleY) < 400) {
-        setHasSit(true);
-        setHasStand(false);
-      }
-      if (hasSit && Math.abs(leftHipY - leftAnkleY) > 400) {
+      const distance = Math.abs(leftHipY - leftAnkleY);
+      console.log(`Distance: ${distance}, hasSit: ${hasSit}, hasStand: ${hasStand}`);
+  
+      // Adjusted threshold for sitting detection
+      if (distance < 300) { 
+        if (!hasSit) { // Transition to sit
+          setHasSit(true);
+          setHasStand(false);
+          console.log("Transition to Sit");
+        }
+      } else if (hasSit) { // Transition to stand
         setHasStand(true);
         setHasSit(false);
+        setNoOfSquats(prev => prev + 1); // Increment squat counter
+        console.log("Transition to Stand, Squats Incremented");
       }
     }
   };
-
+  
   const handlePushups = pose => {
     const leftWristY = pose[0]?.pose?.leftWrist?.y;
     const rightWristY = pose[0]?.pose?.rightWrist?.y;
     const leftShoulderY = pose[0]?.pose?.leftShoulder?.y;
     const rightShoulderY = pose[0]?.pose?.rightShoulder?.y;
-
+  
+    console.log('Pushups:', leftWristY, rightWristY, leftShoulderY, rightShoulderY);
+  
     if (
       pose[0]?.pose?.leftWrist?.confidence > 0.5 &&
       pose[0]?.pose?.rightWrist?.confidence > 0.5 &&
@@ -139,29 +152,32 @@ const ExerciseTrackingScreen = ({route}) => {
       pose[0]?.pose?.rightShoulder?.confidence > 0.5
     ) {
       if (
-        Math.abs(leftWristY - leftShoulderY) < 150 &&
-        Math.abs(rightWristY - rightShoulderY) < 150
+        Math.abs(leftWristY - leftShoulderY) < 120 &&
+        Math.abs(rightWristY - rightShoulderY) < 120
       ) {
         setHasSit(true);
         setHasStand(false);
       }
       if (
         hasSit &&
-        Math.abs(leftWristY - leftShoulderY) > 200 &&
-        Math.abs(rightWristY - rightShoulderY) > 200
+        Math.abs(leftWristY - leftShoulderY) > 180 &&
+        Math.abs(rightWristY - rightShoulderY) > 180
       ) {
         setHasStand(true);
         setHasSit(false);
+        setNoOfPushups(prev => prev + 1);
       }
     }
   };
-
+  
   const handleLunges = pose => {
     const leftKneeY = pose[0]?.pose?.leftKnee?.y;
     const rightKneeY = pose[0]?.pose?.rightKnee?.y;
     const leftHipY = pose[0]?.pose?.leftHip?.y;
     const rightHipY = pose[0]?.pose?.rightHip?.y;
-
+  
+    console.log('Lunges:', leftKneeY, rightKneeY, leftHipY, rightHipY);
+  
     if (
       pose[0]?.pose?.leftKnee?.confidence > 0.5 &&
       pose[0]?.pose?.rightKnee?.confidence > 0.5 &&
@@ -169,29 +185,34 @@ const ExerciseTrackingScreen = ({route}) => {
       pose[0]?.pose?.rightHip?.confidence > 0.5
     ) {
       if (
-        Math.abs(leftKneeY - leftHipY) < 300 &&
-        Math.abs(rightKneeY - rightHipY) < 300
+        Math.abs(leftKneeY - leftHipY) < 280 &&
+        Math.abs(rightKneeY - rightHipY) < 280
       ) {
         setHasSit(true);
         setHasStand(false);
       }
       if (
         hasSit &&
-        Math.abs(leftKneeY - leftHipY) > 300 &&
-        Math.abs(rightKneeY - rightHipY) > 300
+        Math.abs(leftKneeY - leftHipY) > 320 &&
+        Math.abs(rightKneeY - rightHipY) > 320
       ) {
         setHasStand(true);
         setHasSit(false);
+        setNoOfLunges(prev => prev + 1);
       }
     }
   };
-
+  
+  const [plankStartTime, setPlankStartTime] = useState(null);
+  
   const handlePlanks = pose => {
     const leftShoulderY = pose[0]?.pose?.leftShoulder?.y;
     const rightShoulderY = pose[0]?.pose?.rightShoulder?.y;
     const leftAnkleY = pose[0]?.pose?.leftAnkle?.y;
     const rightAnkleY = pose[0]?.pose?.rightAnkle?.y;
-
+  
+    console.log('Planks:', leftShoulderY, rightShoulderY, leftAnkleY, rightAnkleY);
+  
     if (
       pose[0]?.pose?.leftShoulder?.confidence > 0.5 &&
       pose[0]?.pose?.rightShoulder?.confidence > 0.5 &&
@@ -199,12 +220,19 @@ const ExerciseTrackingScreen = ({route}) => {
       pose[0]?.pose?.rightAnkle?.confidence > 0.5
     ) {
       if (
-        Math.abs(leftShoulderY - leftAnkleY) < 150 &&
-        Math.abs(rightShoulderY - rightAnkleY) < 150
+        Math.abs(leftShoulderY - leftAnkleY) < 120 &&
+        Math.abs(rightShoulderY - rightAnkleY) < 120
       ) {
-        setIsPlanking(true);
+        if (!isPlanking) {
+          setPlankStartTime(Date.now());
+          setIsPlanking(true);
+        }
       } else {
-        setIsPlanking(false);
+        if (isPlanking) {
+          const elapsed_time = (Date.now() - plankStartTime) / 1000;
+          setTimer(elapsed_time);
+          setIsPlanking(false);
+        }
       }
     }
   };
@@ -234,9 +262,12 @@ const ExerciseTrackingScreen = ({route}) => {
   //   }
   // };
 
-  useEffect(() => {
-    setNoOfSquats(prev => (hasStand ? prev + 1 : prev));
-  }, [hasStand]);
+  // useEffect(() => {
+  //  if (hasStand) {
+  //    setNoOfSquats(prev => prev);
+  //    console.log('Squat counter incremented:', noOfSquats);
+  //  }
+  // }, [hasStand]);
 
   const isPreviousDisabled = currentExerciseIndex === 0;
   const isNextDisabled = currentExerciseIndex === exercises.length - 1;
