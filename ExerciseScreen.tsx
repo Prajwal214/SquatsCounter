@@ -19,7 +19,7 @@ const exercises = [
   {name: 'Squats', icon: require('./assets/squats.png')},
   {name: 'Push-ups', icon: require('./assets/pushups.png')},
   {name: 'Planks', icon: require('./assets/planks.png')},
-  {name: 'Lunges', icon: require('./assets/lunges.png')},
+  {name: 'Lunges', icon: require('./assets/lunge.png')},
 ];
 
 const ExerciseScreen = () => {
