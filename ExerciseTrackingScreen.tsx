@@ -201,38 +201,54 @@ const handlePushups = (pose) => {
 };
 
 const handleLunges = pose => {
-    const leftKneeY = pose[0]?.pose?.leftKnee?.y;
-    const rightKneeY = pose[0]?.pose?.rightKnee?.y;
-    const leftHipY = pose[0]?.pose?.leftHip?.y;
-    const rightHipY = pose[0]?.pose?.rightHip?.y;
+  const leftKneeY = pose[0]?.pose?.leftKnee?.y;
+  const rightKneeY = pose[0]?.pose?.rightKnee?.y;
+  const leftHipY = pose[0]?.pose?.leftHip?.y;
+  const rightHipY = pose[0]?.pose?.rightHip?.y;
 
-    console.log('Lunges:', leftKneeY, rightKneeY, leftHipY, rightHipY);
+  console.log('Lunges:', leftKneeY, rightKneeY, leftHipY, rightHipY);
+  console.log('State - hasSitLunges:', hasSitLunges, 'hasStandLunges:', hasStandLunges);
 
-    if (
-        pose[0]?.pose?.leftKnee?.confidence > 0.5 &&
-        pose[0]?.pose?.rightKnee?.confidence > 0.5 &&
-        pose[0]?.pose?.leftHip?.confidence > 0.5 &&
-        pose[0]?.pose?.rightHip?.confidence > 0.5
-    ) {
-        if (
-            Math.abs(leftKneeY - leftHipY) < 280 &&
-            Math.abs(rightKneeY - rightHipY) < 280
-        ) {
-            setHasSitLunges(true);
-            setHasStandLunges(false);
-        }
-        if (
-            hasSitLunges &&
-            Math.abs(leftKneeY - leftHipY) > 320 &&
-            Math.abs(rightKneeY - rightHipY) > 320
-        ) {
-            setHasStandLunges(true);
-            setHasSitLunges(false);
-            setNoOfLunges(prevl => prevl + 1);
-        }
-    }
+  // Check if all required keypoints are detected with sufficient confidence
+  if (
+      pose[0]?.pose?.leftKnee?.confidence > 0.5 &&
+      pose[0]?.pose?.rightKnee?.confidence > 0.5 &&
+      pose[0]?.pose?.leftHip?.confidence > 0.5 &&
+      pose[0]?.pose?.rightHip?.confidence > 0.5
+  ) {
+      // Detect sitting lunge position
+      if (
+          Math.abs(leftKneeY - leftHipY) < 290 &&  // Adjusted threshold
+          Math.abs(rightKneeY - rightHipY) < 290
+      ) {
+          setHasSitLunges(true);
+          setHasStandLunges(false);
+          console.log('Detected sitting lunge');
+      }
+      
+      // Detect standing position and count lunges
+      if (
+          hasSitLunges &&
+          Math.abs(leftKneeY - leftHipY) > 190 &&  // Adjusted threshold
+          Math.abs(rightKneeY - rightHipY) > 190
+      ) {
+          setHasStandLunges(true);
+          setHasSitLunges(false);
+          setNoOfLunges(prevl => prevl + 1);
+          console.log('Detected standing lunge. Incrementing count:', noOfLunges + 1);
+      } else {
+          console.log('Conditions for standing lunge not met:', {
+              leftKneeY,
+              leftHipY,
+              rightKneeY,
+              rightHipY,
+              hasSitLunges,
+              hasStandLunges
+          });
+      }
+  }
 };
-  
+
   const [plankStartTime, setPlankStartTime] = useState(null);
   
   const handlePlanks = pose => {
