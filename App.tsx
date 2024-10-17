@@ -9,7 +9,9 @@ import ExerciseScreen from './ExerciseScreen'; // Adjust the path as necessary
 import ExerciseTrackingScreen from './ExerciseTrackingScreen'; // Adjust the path as necessary
 import LandingPage from './LandingPage';
 import UserInput from './UserInput';
-
+import Home from './Home';
+import Exercises from './Exercise';
+import ExerciseDetails from './ExerciseDetails';
 const Stack = createStackNavigator();
 
 const App = () => {
@@ -54,6 +56,21 @@ const App = () => {
               });
             },
           }}
+        />
+        <Stack.Screen
+        name="Home"
+        component={Home}
+        options={{headerShown: false}}
+        />
+        <Stack.Screen
+        name="Exercises"
+        component={Exercises}
+        options={{headerShown: false}}
+        />
+        <Stack.Screen
+        name="ExerciseDetails"
+        component={ExerciseDetails}
+        options={{headerShown: false}}
         />
       </Stack.Navigator>
     </NavigationContainer>

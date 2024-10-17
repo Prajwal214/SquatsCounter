@@ -14,6 +14,7 @@ import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/Entypo';
+import FloatingButton from './components/FloatingButton';
 
 const exercises = [
   {name: 'Squats', icon: require('./assets/squats.png')},
@@ -122,6 +123,10 @@ const ExerciseScreen = () => {
         </View>
       )}
     </ScrollView>
+    <FloatingButton
+        style={styles.floatingBtn}
+        onPress={() => navigation.navigate('Home')}
+      />
     </SafeAreaView>
   );
 };
@@ -228,6 +233,11 @@ input: {
     paddingLeft: 0,
     backgroundColor: '#fff',
     color: '#424242',
+},
+floatingBtn: {
+  position: 'absolute',
+  bottom: 10,
+  right: 10,
 },
 });
 
