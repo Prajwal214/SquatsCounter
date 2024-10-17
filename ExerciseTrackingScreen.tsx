@@ -31,6 +31,10 @@ const ExerciseTrackingScreen = ({route}) => {
 
   const [hasSit, setHasSit] = useState(false);
   const [hasStand, setHasStand] = useState(false);
+  const [hasSitPushups, setHasSitPushups] = useState(false);
+  const [hasStandPushups, setHasStandPushups] = useState(false);
+  const [hasSitLunges, setHasSitLunges] = useState(false);
+  const [hasStandLunges, setHasStandLunges] = useState(false);
   const navigation = useNavigation();
   const [timer, setTimer] = useState(0);
   const [isPlanking, setIsPlanking] = useState(false);
@@ -74,39 +78,30 @@ const ExerciseTrackingScreen = ({route}) => {
     return () => clearInterval(interval);
   }, [isPlanking]);
 
-  useEffect(() => {
-    setNoOfPushups(prev => (hasStand ? prev + 1 : prev));
-  }, [hasStand]);
-
-  useEffect(() => {
-    setNoOfLunges(prev => (hasStand ? prev + 1 : prev));
-  }, [hasStand]);
-
   const onPoseDetected = pose => {
-    switch (exercise) {
+    switch (currentExercise) { // Use currentExercise instead of exercise
       case 'Squats':
         handleSquats(pose);
         break;
-
+  
       case 'Push-ups':
         handlePushups(pose);
         break;
-
+  
       case 'Lunges':
         handleLunges(pose);
         break;
-
+  
       case 'Planks':
         handlePlanks(pose);
         break;
-
+  
       default:
-        console.warn(`Unknown exercise: ${exercise}`);
+        console.warn(`Unknown exercise: ${currentExercise}`); // Update warning message
         break;
     }
   };
 
-  // Separate functions for each exercise
   const handleSquats = pose => {
     const leftHipY = pose[0]?.pose?.leftHip?.y;
     const leftAnkleY = pose[0]?.pose?.leftAnkle?.y;
@@ -136,72 +131,107 @@ const ExerciseTrackingScreen = ({route}) => {
       }
     }
   };
-  
-  const handlePushups = pose => {
-    const leftWristY = pose[0]?.pose?.leftWrist?.y;
-    const rightWristY = pose[0]?.pose?.rightWrist?.y;
-    const leftShoulderY = pose[0]?.pose?.leftShoulder?.y;
-    const rightShoulderY = pose[0]?.pose?.rightShoulder?.y;
-  
-    console.log('Pushups:', leftWristY, rightWristY, leftShoulderY, rightShoulderY);
-  
-    if (
-      pose[0]?.pose?.leftWrist?.confidence > 0.5 &&
-      pose[0]?.pose?.rightWrist?.confidence > 0.5 &&
-      pose[0]?.pose?.leftShoulder?.confidence > 0.5 &&
-      pose[0]?.pose?.rightShoulder?.confidence > 0.5
-    ) {
-      if (
-        Math.abs(leftWristY - leftShoulderY) < 120 &&
-        Math.abs(rightWristY - rightShoulderY) < 120
-      ) {
-        setHasSit(true);
-        setHasStand(false);
-      }
-      if (
-        hasSit &&
-        Math.abs(leftWristY - leftShoulderY) > 180 &&
-        Math.abs(rightWristY - rightShoulderY) > 180
-      ) {
-        setHasStand(true);
-        setHasSit(false);
-        setNoOfPushups(prev => prev + 1);
-      }
+
+  const THRESHOLD_DOWN_MIN = 30; // Minimum angle threshold for down position
+  const THRESHOLD_DOWN_MAX = 50; // Maximum angle threshold for down position
+  const THRESHOLD_UP = 140;       // Angle threshold for up position
+  const BASE_CONFIDENCE_THRESHOLD = 0.6; // Base confidence threshold
+  const MIN_KEYPOINT_CONFIDENCE = 0.3; // Minimum confidence for each keypoint
+  const TOLERANCE = 10; // Increased tolerance for angle detection
+  const STATE_FLAP_BUFFER = 1000; // Time in ms to prevent rapid state changes
+
+const calculateAngle = (p1, p2, p3) => {
+    const a = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+    const b = Math.sqrt(Math.pow(p3.x - p2.x, 2) + Math.pow(p3.y - p2.y, 2));
+    const c = Math.sqrt(Math.pow(p3.x - p1.x, 2) + Math.pow(p3.y - p1.y, 2));
+    const angle = Math.acos((a * a + b * b - c * c) / (2 * a * b));
+    return angle * (180 / Math.PI);
+};
+
+const [isInDownPosition, setIsInDownPosition] = useState(false);
+const [pushupCount, setPushupCount] = useState(0);
+const [lastTransitionTime, setLastTransitionTime] = useState(0);
+
+const handlePushups = (pose) => {
+    if (!pose[0]?.pose) return;
+
+    const { leftShoulder, rightShoulder, leftElbow, rightElbow, leftHip, rightHip } = pose[0].pose;
+
+    // Calculate average confidence
+    const averageConfidence = (leftShoulder?.confidence + rightShoulder?.confidence + leftElbow?.confidence + rightElbow?.confidence) / 4;
+
+    // Check if keypoints have sufficient confidence
+    const keypointsConfidence = [
+        leftShoulder?.confidence,
+        rightShoulder?.confidence,
+        leftElbow?.confidence,
+        rightElbow?.confidence,
+    ];
+
+    const sufficientConfidence = keypointsConfidence.every(confidence => confidence > MIN_KEYPOINT_CONFIDENCE);
+
+    if (sufficientConfidence) {
+        const leftArmAngle = calculateAngle(leftShoulder, leftElbow, leftHip);
+        const rightArmAngle = calculateAngle(rightShoulder, rightElbow, rightHip);
+
+        // Log the angles and average confidence
+        console.log('Angles:', leftArmAngle, rightArmAngle);
+        console.log('Average Confidence:', averageConfidence);
+
+        // Detect down and up positions with increased tolerance
+        const isInDownPositionNow = (leftArmAngle >= THRESHOLD_DOWN_MIN - TOLERANCE && leftArmAngle <= THRESHOLD_DOWN_MAX + TOLERANCE) &&
+                                    (rightArmAngle >= THRESHOLD_DOWN_MIN - TOLERANCE && rightArmAngle <= THRESHOLD_DOWN_MAX + TOLERANCE);
+        const isInUpPositionNow = leftArmAngle > (THRESHOLD_UP - TOLERANCE) && rightArmAngle > (THRESHOLD_UP - TOLERANCE);
+
+        // Prevent state flapping
+        const currentTime = new Date().getTime();
+        if (currentTime - lastTransitionTime > STATE_FLAP_BUFFER) {
+            if (isInDownPositionNow && !isInDownPosition) {
+                setIsInDownPosition(true);
+                setLastTransitionTime(currentTime);
+            } else if (isInUpPositionNow && isInDownPosition) {
+                setIsInDownPosition(false);
+                setPushupCount(prevp => prevp + 1);
+                setLastTransitionTime(currentTime);
+            }
+        }
+    } else {
+        console.log('Insufficient confidence in keypoints:', keypointsConfidence);
     }
-  };
-  
-  const handleLunges = pose => {
+};
+
+const handleLunges = pose => {
     const leftKneeY = pose[0]?.pose?.leftKnee?.y;
     const rightKneeY = pose[0]?.pose?.rightKnee?.y;
     const leftHipY = pose[0]?.pose?.leftHip?.y;
     const rightHipY = pose[0]?.pose?.rightHip?.y;
-  
+
     console.log('Lunges:', leftKneeY, rightKneeY, leftHipY, rightHipY);
-  
+
     if (
-      pose[0]?.pose?.leftKnee?.confidence > 0.5 &&
-      pose[0]?.pose?.rightKnee?.confidence > 0.5 &&
-      pose[0]?.pose?.leftHip?.confidence > 0.5 &&
-      pose[0]?.pose?.rightHip?.confidence > 0.5
+        pose[0]?.pose?.leftKnee?.confidence > 0.5 &&
+        pose[0]?.pose?.rightKnee?.confidence > 0.5 &&
+        pose[0]?.pose?.leftHip?.confidence > 0.5 &&
+        pose[0]?.pose?.rightHip?.confidence > 0.5
     ) {
-      if (
-        Math.abs(leftKneeY - leftHipY) < 280 &&
-        Math.abs(rightKneeY - rightHipY) < 280
-      ) {
-        setHasSit(true);
-        setHasStand(false);
-      }
-      if (
-        hasSit &&
-        Math.abs(leftKneeY - leftHipY) > 320 &&
-        Math.abs(rightKneeY - rightHipY) > 320
-      ) {
-        setHasStand(true);
-        setHasSit(false);
-        setNoOfLunges(prev => prev + 1);
-      }
+        if (
+            Math.abs(leftKneeY - leftHipY) < 280 &&
+            Math.abs(rightKneeY - rightHipY) < 280
+        ) {
+            setHasSitLunges(true);
+            setHasStandLunges(false);
+        }
+        if (
+            hasSitLunges &&
+            Math.abs(leftKneeY - leftHipY) > 320 &&
+            Math.abs(rightKneeY - rightHipY) > 320
+        ) {
+            setHasStandLunges(true);
+            setHasSitLunges(false);
+            setNoOfLunges(prevl => prevl + 1);
+        }
     }
-  };
+};
   
   const [plankStartTime, setPlankStartTime] = useState(null);
   
@@ -210,64 +240,35 @@ const ExerciseTrackingScreen = ({route}) => {
     const rightShoulderY = pose[0]?.pose?.rightShoulder?.y;
     const leftAnkleY = pose[0]?.pose?.leftAnkle?.y;
     const rightAnkleY = pose[0]?.pose?.rightAnkle?.y;
-  
+
     console.log('Planks:', leftShoulderY, rightShoulderY, leftAnkleY, rightAnkleY);
-  
+
     if (
-      pose[0]?.pose?.leftShoulder?.confidence > 0.5 &&
-      pose[0]?.pose?.rightShoulder?.confidence > 0.5 &&
-      pose[0]?.pose?.leftAnkle?.confidence > 0.5 &&
-      pose[0]?.pose?.rightAnkle?.confidence > 0.5
+        pose[0]?.pose?.leftShoulder?.confidence > 0.5 &&
+        pose[0]?.pose?.rightShoulder?.confidence > 0.5 &&
+        pose[0]?.pose?.leftAnkle?.confidence > 0.5 &&
+        pose[0]?.pose?.rightAnkle?.confidence > 0.5
     ) {
-      if (
-        Math.abs(leftShoulderY - leftAnkleY) < 120 &&
-        Math.abs(rightShoulderY - rightAnkleY) < 120
-      ) {
-        if (!isPlanking) {
-          setPlankStartTime(Date.now());
-          setIsPlanking(true);
+        // Check if the user is in the plank position
+        if (
+            Math.abs(leftShoulderY - leftAnkleY) < 120 &&
+            Math.abs(rightShoulderY - rightAnkleY) < 120
+        ) {
+            if (!isPlanking) {
+                setPlankStartTime(Date.now());
+                setIsPlanking(true);
+                console.log("Plank started");
+            }
+        } else {
+            if (isPlanking) {
+                const elapsed_time = (Date.now() - plankStartTime) / 1000;
+                setTimer(elapsed_time);
+                setIsPlanking(false);
+                console.log("Plank ended, time:", elapsed_time);
+            }
         }
-      } else {
-        if (isPlanking) {
-          const elapsed_time = (Date.now() - plankStartTime) / 1000;
-          setTimer(elapsed_time);
-          setIsPlanking(false);
-        }
-      }
     }
-  };
-
-  // const onPoseDetected = (pose) => {
-  //   // leftHip = 11
-  //   // leftAnkle = 15
-  //   if (
-  //     pose[0]?.pose?.leftHip?.confidence > 0.5 &&
-  //     pose[0]?.pose?.leftAnkle?.confidence > 0.5
-  //   ) {
-  //     if (
-  //       Math.abs(pose[0]?.pose?.leftHip?.y - pose[0]?.pose?.leftAnkle?.y) < 400
-  //     ) {
-  //       setHasSit(true);
-  //       setHasStand(false);
-  //     }
-  //     if (hasSit) {
-  //       if (
-  //         Math.abs(pose[0]?.pose?.leftHip?.y - pose[0]?.pose?.leftAnkle?.y) >
-  //         400
-  //       ) {
-  //         setHasStand(true);
-  //         setHasSit(false);
-  //       }
-  //     }
-  //   }
-  // };
-
-  // useEffect(() => {
-  //  if (hasStand) {
-  //    setNoOfSquats(prev => prev);
-  //    console.log('Squat counter incremented:', noOfSquats);
-  //  }
-  // }, [hasStand]);
+};
 
   const isPreviousDisabled = currentExerciseIndex === 0;
   const isNextDisabled = currentExerciseIndex === exercises.length - 1;
@@ -288,9 +289,11 @@ const ExerciseTrackingScreen = ({route}) => {
     setWorkoutData();
     navigation.goBack(); // Go back to the previous screen or workout overview
   };
-  const handleCancel = () => {
+
+ const handleCancel = () => {
     navigation.goBack(); // Go back to the previous screen or workout overview
   };
+
   const requestCameraPermission = async () => {
     try {
       const granted = await PermissionsAndroid.request(
@@ -352,7 +355,7 @@ const ExerciseTrackingScreen = ({route}) => {
       )}
 
       {currentExercise === 'Push-ups' && (
-        <Text style={styles.counter}>No of Push-ups: {noOfPushups}</Text>
+        <Text style={styles.counter}>No of Push-ups: {pushupCount}</Text>
       )}
 
       {currentExercise === 'Lunges' && (
