@@ -56,7 +56,7 @@ export default function PersonalizedWorkoutPage() {
 
         <View className="flex justify-center items-center space-y-2">
           <Image
-            source={require('../assets/images/avatar.png')}
+            source={require('../assets/images/avatar.jpg')}
 
             className="rounded-full"
           />

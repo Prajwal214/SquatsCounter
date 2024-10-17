@@ -4,54 +4,54 @@ import { Image } from 'react-native';
 
 export const rapidApiKey = '0261abc2f8mshf9ae13a32a4d0dep1f3256jsn965847f6897e';
 export const sliderImages = [
-  Image.resolveAssetSource(require('./assets/images/slide1.png')),
-  Image.resolveAssetSource(require('./assets/images/slide2.png')),
-  Image.resolveAssetSource(require('./assets/images/slide3.png')),
-  Image.resolveAssetSource(require('./assets/images/slide4.png')),
-  Image.resolveAssetSource(require('./assets/images/slide5.png')),
+  Image.resolveAssetSource(require('./assets/images/slide1.jpg')),
+  Image.resolveAssetSource(require('./assets/images/slide2.jpg')),
+  Image.resolveAssetSource(require('./assets/images/slide3.jpg')),
+  Image.resolveAssetSource(require('./assets/images/slide4.jpg')),
+  Image.resolveAssetSource(require('./assets/images/slide5.jpg')),
 ];
 
 export const bodyParts = [
     {
       name: 'back',
-      image: require('./assets/images/back.png'),
+      image: require('./assets/images/back.jpg'),
     },
     {
       name: 'cardio',
-      image: require('./assets/images/cardio.png'),
+      image: require('./assets/images/cardio.jpg'),
     },
 
     {
       name: 'lower arms',
-      image: require('./assets/images/lowerArms.png'),
+      image: require('./assets/images/lowerArms.jpg'),
     },
     {
       name: 'lower legs',
-      image: require('./assets/images/lowerLegs.png'),
+      image: require('./assets/images/lowerLegs.jpg'),
     },
     {
       name: 'chest',
-      image: require('./assets/images/chest.png'),
+      image: require('./assets/images/chest.jpg'),
     },
     {
       name: 'neck',
-      image: require('./assets/images/neck.png'),
+      image: require('./assets/images/neck.jpg'),
     },
     {
       name: 'shoulders',
-      image: require('./assets/images/shoulders.png'),
+      image: require('./assets/images/shoulders.jpg'),
     },
     {
       name: 'upper arms',
-      image: require('./assets/images/upperArms.png'),
+      image: require('./assets/images/upperArms.jpg'),
     },
     {
       name: 'upper legs',
-      image: require('./assets/images/upperLegs.png'),
+      image: require('./assets/images/upperLegs.jpg'),
     },
     {
       name: 'waist',
-      image: require('./assets/images/waist.png'),
+      image: require('./assets/images/waist.jpg'),
     },
 ];
 

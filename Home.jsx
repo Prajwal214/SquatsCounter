@@ -25,7 +25,7 @@ export default function Home() {
 
         <View style={styles.avatarContainer}>
           <Image
-            source={require('./assets/images/avatar.png')}
+            source={require('./assets/images/avatar.jpg')}
             style={styles.avatar}
           />
           <View style={styles.notificationIconContainer}>
