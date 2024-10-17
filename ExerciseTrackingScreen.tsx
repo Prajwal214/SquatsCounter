@@ -249,42 +249,83 @@ const handleLunges = pose => {
   }
 };
 
-  const [plankStartTime, setPlankStartTime] = useState(null);
+    const [plankStartTime, setPlankStartTime] = useState(null);
   
-  const handlePlanks = pose => {
-    const leftShoulderY = pose[0]?.pose?.leftShoulder?.y;
-    const rightShoulderY = pose[0]?.pose?.rightShoulder?.y;
-    const leftAnkleY = pose[0]?.pose?.leftAnkle?.y;
-    const rightAnkleY = pose[0]?.pose?.rightAnkle?.y;
-
-    console.log('Planks:', leftShoulderY, rightShoulderY, leftAnkleY, rightAnkleY);
-
-    if (
-        pose[0]?.pose?.leftShoulder?.confidence > 0.5 &&
-        pose[0]?.pose?.rightShoulder?.confidence > 0.5 &&
-        pose[0]?.pose?.leftAnkle?.confidence > 0.5 &&
-        pose[0]?.pose?.rightAnkle?.confidence > 0.5
-    ) {
-        // Check if the user is in the plank position
-        if (
-            Math.abs(leftShoulderY - leftAnkleY) < 120 &&
-            Math.abs(rightShoulderY - rightAnkleY) < 120
-        ) {
-            if (!isPlanking) {
-                setPlankStartTime(Date.now());
-                setIsPlanking(true);
-                console.log("Plank started");
-            }
-        } else {
-            if (isPlanking) {
-                const elapsed_time = (Date.now() - plankStartTime) / 1000;
-                setTimer(elapsed_time);
-                setIsPlanking(false);
-                console.log("Plank ended, time:", elapsed_time);
-            }
-        }
-    }
-};
+    const handlePlanks = pose => {
+      // Check if pose data is available
+      if (!pose || pose.length === 0) {
+          if (isPlanking) {
+              const elapsed_time = (Date.now() - plankStartTime) / 1000;
+              setTimer(elapsed_time);
+              setIsPlanking(false);
+              console.log("Plank ended, time:", elapsed_time);
+          }
+          return; // Exit if no pose data is available
+      }
+  
+      const leftShoulderY = pose[0]?.pose?.leftShoulder?.y;
+      const rightShoulderY = pose[0]?.pose?.rightShoulder?.y;
+      const leftAnkleY = pose[0]?.pose?.leftAnkle?.y;
+      const rightAnkleY = pose[0]?.pose?.rightAnkle?.y;
+  
+      const leftShoulderConfidence = pose[0]?.pose?.leftShoulder?.confidence;
+      const rightShoulderConfidence = pose[0]?.pose?.rightShoulder?.confidence;
+      const leftAnkleConfidence = pose[0]?.pose?.leftAnkle?.confidence;
+      const rightAnkleConfidence = pose[0]?.pose?.rightAnkle?.confidence;
+  
+      // Log the current positions and confidence levels
+      console.log('Planks:', leftShoulderY, rightShoulderY, leftAnkleY, rightAnkleY);
+      console.log('Confidences:', leftShoulderConfidence, rightShoulderConfidence, leftAnkleConfidence, rightAnkleConfidence);
+  
+      // Define thresholds for confidence and Y-coordinate differences
+      const confidenceThreshold = 0.08;
+      const yDifferenceThreshold = 100;
+  
+      // Check if shoulders are detected with high confidence
+      if (leftShoulderConfidence > confidenceThreshold && rightShoulderConfidence > confidenceThreshold) {
+          // Allow for fallback if at least one ankle is detected with some confidence
+          if (leftAnkleConfidence > confidenceThreshold || rightAnkleConfidence > confidenceThreshold) {
+              // Calculate the differences in Y-coordinates
+              const leftShoulderAnkleDiff = leftShoulderY - (leftAnkleY || rightAnkleY);
+              const rightShoulderAnkleDiff = rightShoulderY - (rightAnkleY || leftAnkleY);
+  
+              // Check if the user is in the plank position
+              const isCurrentlyPlanking = Math.abs(leftShoulderAnkleDiff) < yDifferenceThreshold &&
+                                          Math.abs(rightShoulderAnkleDiff) < yDifferenceThreshold;
+  
+              if (isCurrentlyPlanking) {
+                  if (!isPlanking) {
+                      setPlankStartTime(Date.now());
+                      setIsPlanking(true);
+                      console.log("Plank started");
+                  }
+              } else {
+                  if (isPlanking) {
+                      const elapsed_time = (Date.now() - plankStartTime) / 1000;
+                      setTimer(elapsed_time);
+                      setIsPlanking(false);
+                      console.log("Plank ended, time:", elapsed_time);
+                  }
+              }
+          } else {
+              // If ankle confidence is low, check if currently planking and stop the timer
+              if (isPlanking) {
+                  const elapsed_time = (Date.now() - plankStartTime) / 1000;
+                  setTimer(elapsed_time);
+                  setIsPlanking(false);
+                  console.log("Plank ended due to insufficient ankle confidence, time:", elapsed_time);
+              }
+          }
+      } else {
+          // If shoulder confidence is low, check if currently planking and stop the timer
+          if (isPlanking) {
+              const elapsed_time = (Date.now() - plankStartTime) / 1000;
+              setTimer(elapsed_time);
+              setIsPlanking(false);
+              console.log("Plank ended due to insufficient shoulder confidence, time:", elapsed_time);
+          }
+      }
+  };
 
   const isPreviousDisabled = currentExerciseIndex === 0;
   const isNextDisabled = currentExerciseIndex === exercises.length - 1;
